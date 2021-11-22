@@ -66,7 +66,7 @@ if (isset($_POST['login'])) {
         // hash user entered password with the unique salt 
         $vault = pbkdf2("sha256", trim($_POST['pass']), trim($salt), 1000, 32, false);
         // check is username and hashes match
-        if(trim($uname) == $_POST['user'] && strcmp($vault, $pass)) {
+        if(trim($uname) == $_POST['user'] && sequals($vault, trim($pass))) {
             // if user logged is admin then change value to true
             if ($_POST['user'] == 'admin'){
                 $fil = fopen('val.txt', 'w');

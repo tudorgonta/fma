@@ -67,4 +67,12 @@ function pbkdf2($algorithm, $password, $salt, $count, $key_length, $raw_output =
     else
         return bin2hex(substr($output, 0, $key_length));
 }
+
+function sequals($a, $b) {
+    $diff = strlen($a) ^ strlen($b);
+    for($i = 0; $i < strlen($a) && $i < strlen($b); $i++){
+        $diff |= ord($a[$i]) ^ ord($b[$i]);
+    }
+    return $diff === 0; 
+}
 ?>
