@@ -35,7 +35,12 @@ if (isset($_POST['reg'])) {
         $name_in = trim($_POST['pass']);
         $length = strlen($name_in);
         if ($length >= 4 && $length <= 12) {
-            $clean['pass'] = $name_in;
+            // generate random salt 32 byte
+            $salt = bin2hex(random_bytes(32));
+            // convert salt and append to array
+            $clean['salt'] = $salt;
+            // hash the password using pdkdf2 function
+            $clean['pass'] = pbkdf2("sha256", $name_in, $salt, 1000, 32, false);
         } else {
             $errors_detected = true;
             $errors[] = 'Password is required';
@@ -85,7 +90,7 @@ if (isset($_POST['reg'])) {
     $user_det = array();
     while(!feof($file)) {
         $line = fgets($file, 4096);
-        list($title, $fname, $email, $uname, $pass) = array_pad(explode(';', $line, 5), 5, null);
+        list($title, $fname, $email, $uname, $salt, $pass) = array_pad(explode(';', $line, 6), 6, null);
         if(trim($uname) == $_POST['uname'] || trim($email) == $_POST['email']) {
             $errors_detected = true;
             $errors[] = 'User already exists';
@@ -108,6 +113,8 @@ if ($form_is_submitted === true && $errors_detected === false) {
     $data .= $clean['fname'] .';';
     $data .= $clean['email'] .';';
     $data .= $clean['uname'] .';';
+    //store salt in user data
+    $data .= $clean['salt'] . ';';
     $data .= $clean['pass'] . "\n";
     //open data file
     $file = fopen('users.txt', 'a') or die("Couldn't open the file.");

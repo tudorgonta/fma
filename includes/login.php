@@ -55,19 +55,25 @@ if (isset($_POST['login'])) {
         $errors_detected = true;
         $errors[] = 'Password not submitted';
     }
+
+
     // Open data file
     $file = fopen('users.txt', 'r');
     //loop through lines till matching one found/ if not, error message displays
     while(!feof($file)) {
         $line = fgets($file, 4096);
-        list($title, $fname, $email, $uname, $pass) = array_pad(explode(';', $line, 5), 5, null);
-        if(trim($uname) == $_POST['user'] && trim($pass) == $_POST['pass']) {
+        list($title, $fname, $email, $uname, $salt, $pass) = array_pad(explode(';', $line, 6), 6, null);
+        // hash user entered password with the unique salt 
+        $vault = pbkdf2("sha256", trim($_POST['pass']), trim($salt), 1000, 32, false);
+        // check is username and hashes match
+        if(trim($uname) == $_POST['user'] && strcmp($vault, $pass)) {
             // if user logged is admin then change value to true
             if ($_POST['user'] == 'admin'){
                 $fil = fopen('val.txt', 'w');
                 fwrite($fil, 'true');
                 fclose($fil);
             }
+
             $form_is_submitted = true;
             break; 
         }
